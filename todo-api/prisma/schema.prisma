@@ -1,0 +1,97 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TaskStatus {
+  TODO
+  DOING
+  DONE
+}
+
+enum SharePermission {
+  READ
+  EDIT
+}
+
+enum AttachmentStatus {
+  PENDING
+  READY
+}
+
+model User {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  projects     Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  ownerId     String      @map("owner_id") @db.Uuid
+  name        String
+  description String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+  shares      ShareLink[]
+
+  @@index([ownerId])
+  @@map("projects")
+}
+
+model Task {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  projectId   String       @map("project_id") @db.Uuid
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  dueDate     DateTime?    @map("due_date")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+
+  @@index([projectId])
+  @@map("tasks")
+}
+
+model Attachment {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  taskId      String           @map("task_id") @db.Uuid
+  objectName  String           @unique @map("object_name")
+  fileName    String           @map("file_name")
+  contentType String           @map("content_type")
+  sizeBytes   Int              @map("size_bytes")
+  status      AttachmentStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  task        Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("attachments")
+}
+
+model ShareLink {
+  id         String          @id @default(uuid(7)) @db.Uuid
+  projectId  String          @map("project_id") @db.Uuid
+  tokenHash  String          @unique @map("token_hash")
+  permission SharePermission @default(READ)
+  label      String?
+  expiresAt  DateTime?       @map("expires_at")
+  revokedAt  DateTime?       @map("revoked_at")
+  createdAt  DateTime        @default(now()) @map("created_at")
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("share_links")
+}

@@ -1,0 +1,75 @@
+# Ambiente local que espelha a arquitetura da nuvem:
+#   postgres -> Cloud SQL | mongo -> MongoDB Atlas | storage local -> Cloud Storage
+#
+# Modo 1 (desenvolvimento, portas 5433 e 27018 no host): sobe so os bancos e roda a API com `npm run start:dev`
+#   docker compose up -d postgres mongo
+#
+# Modo 2 (teste da imagem de producao): sobe tudo, incluindo a migration e a API em container
+#   docker compose --profile app up --build
+
+name: todo
+
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: todo
+      POSTGRES_PASSWORD: todo
+      POSTGRES_DB: todo
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U todo -d todo"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mongo:
+    image: mongo:8
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    profiles: ["app"]
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://todo:todo@postgres:5432/todo
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    profiles: ["app"]
+    build: .
+    ports:
+      - "3000:8080"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://todo:todo@postgres:5432/todo
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: todo
+      JWT_SECRET: segredo-somente-para-desenvolvimento-local-0123456789
+      CORS_ORIGINS: http://localhost:5173
+      STORAGE_DRIVER: local
+      LOCAL_STORAGE_DIR: /tmp/storage
+      PUBLIC_API_URL: http://localhost:3000
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  mongodata:

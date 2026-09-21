@@ -1,0 +1,21 @@
+# Cloud Build: constroi as duas imagens (API e migrations) e as envia ao Artifact Registry.
+# Uso: gcloud builds submit --config=cloudbuild.yaml --substitutions=_REGISTRY=...,_TAG=...
+steps:
+  - id: build-api
+    name: gcr.io/cloud-builders/docker
+    args: ['build', '--target', 'runtime', '-t', '${_REGISTRY}/todo-api:${_TAG}', '.']
+
+  - id: build-migrate
+    name: gcr.io/cloud-builders/docker
+    args: ['build', '--target', 'migrate', '-t', '${_REGISTRY}/todo-api-migrate:${_TAG}', '.']
+
+images:
+  - '${_REGISTRY}/todo-api:${_TAG}'
+  - '${_REGISTRY}/todo-api-migrate:${_TAG}'
+
+substitutions:
+  _REGISTRY: us-central1-docker.pkg.dev/SEU_PROJETO/todo
+  _TAG: latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
