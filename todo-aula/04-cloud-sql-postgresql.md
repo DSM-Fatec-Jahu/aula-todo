@@ -177,7 +177,7 @@ Fonte: [Cloud SQL pricing](https://cloud.google.com/sql/pricing), `us-central1`,
 | IPv4 público | US$ 0,01/h (quando ocioso) | sem IP público | US$ 0,00 |
 | Tráfego dentro da região | Gratuito para clientes na mesma região | poucos MB | US$ 0,00 |
 | **Total ligado o mês inteiro** | | | **≈ US$ 9,37** |
-| **Total de uma aula de 6 h** | | (0,0105 + 0,00233) × 6 | **≈ US$ 0,08** |
+| **Total de uma sessão de 6 h** | | (0,0105 + 0,00233) × 6 | **≈ US$ 0,08** |
 
 Para comparar:
 
@@ -188,7 +188,7 @@ Para comparar:
 | Disco HDD em vez de SSD | US$ 0,000123288/GiB-h → US$ 0,90 por 10 GiB |
 | **Instância de teste gratuita** (Console → Cloud SQL → *Começar*) | US$ 0 por 30 dias em projeto novo; é uma Enterprise Plus grande (8 vCPU/64 GB), criada por um assistente próprio do Console, e não segue este roteiro. Só vale em **projeto novo** (uma por projeto) |
 
-> **Apague a instância ao terminar** ([capítulo 11](11-validacao-custos-e-limpeza.md)). Esquecida por um mês, é o único item da aula que gera fatura relevante.
+> **Apague a instância ao terminar** ([capítulo 11](11-validacao-custos-e-limpeza.md)). Esquecida por um mês, é o único item deste roteiro que gera fatura relevante.
 
 ---
 

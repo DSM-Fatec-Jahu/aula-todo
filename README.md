@@ -1,8 +1,8 @@
 # Hospedando uma aplicação real no Google Cloud
 
-Material da aula de **Computação em Nuvem**. Ao longo dos capítulos os alunos publicam, no GCP, um app de tarefas (**Todo Cloud**) com usuários e senha, projetos, imagens e arquivos anexos e compartilhamento anônimo de projetos por link.
+Roteiro prático de **Computação em Nuvem**. Ao longo dos capítulos **você** vai publicar, no GCP, um app de tarefas (**Todo Cloud**) com usuários e senha, projetos, imagens e arquivos anexos e compartilhamento anônimo de projetos por link.
 
-> O app é só o veículo. O objetivo é praticar **hospedagem**: containers, serverless, redes privadas, bancos gerenciados, armazenamento de objetos, segredos e CDN.
+> O app é só o veículo. O seu objetivo é praticar **hospedagem**: containers, serverless, redes privadas, bancos gerenciados, armazenamento de objetos, segredos e CDN.
 
 ## O que será construído
 
@@ -38,7 +38,7 @@ flowchart LR
 |---|---|
 | `todo-api/` | API NestJS 12 + Prisma 7 + Mongoose 9 (código, Dockerfile, `cloudbuild.yaml`, `docker-compose.yml`) |
 | `todo-web/` | Front-end React 19 + Vite 8 (código e `firebase.json`) |
-| [`todo-aula/`](todo-aula/) | Os capítulos da aula (abaixo) e o script de teste de ponta a ponta |
+| [`todo-aula/`](todo-aula/) | Os capítulos do roteiro (abaixo) e o script de teste de ponta a ponta |
 
 ## Menu
 
@@ -92,6 +92,7 @@ Cada capítulo de recurso termina com uma **estimativa mensal de custo** baseada
 - Os nomes ficam em variáveis definidas no [capítulo 2](todo-aula/02-projeto-gcp-e-ferramentas.md). Em terminal novo, rode `source ~/todo-aula.env`.
 - Os valores das tabelas ("Nome", "Versão", "Região") são os que os comandos usam. Se mudar um, mude nos dois lugares.
 - Preços em **USD**, consultados em 20/09/2026 nas páginas oficiais; considere 730 horas por mês.
+- Siga os capítulos **na ordem**: cada um usa o que você criou no anterior. Termine sempre pelo [capítulo 11](todo-aula/11-validacao-custos-e-limpeza.md) para apagar o que gera custo.
 
 ## Pré-requisitos
 
@@ -100,15 +101,15 @@ Cada capítulo de recurso termina com uma **estimativa mensal de custo** baseada
 | Conta Google | Contas institucionais podem ter políticas de organização que bloqueiam recursos (veja [problemas comuns](todo-aula/11-validacao-custos-e-limpeza.md#4-problemas-comuns-visão-geral)). Prefira uma conta pessoal |
 | Faturamento | Cartão de crédito. Novas contas ganham créditos de teste |
 | Conta no MongoDB Atlas | Gratuita, sem cartão |
-| Máquina do aluno | Node 24, Git e um terminal Bash. Docker só é necessário para testar localmente (capítulo 1) |
+| Seu computador | Node 24, Git e um terminal Bash. Docker só é necessário para testar localmente (capítulo 1) |
 
-## Segurança: regras da turma
+## Segurança: regras a seguir
 
 1. **Nunca** versione arquivos de credenciais (`.env`, `atlas-credentials.env`). Se uma senha aparecer em chat, e-mail ou repositório, troque-a.
 2. Segredos vão para o **Secret Manager**, não para variáveis em texto puro nem para o código.
-3. O acesso `0.0.0.0/0` do Atlas usado nas aulas é **um laboratório descartável**, com dados fictícios e prazo de expiração. Em projeto real não passa em revisão ([capítulo 5](todo-aula/05-mongodb-atlas.md)).
+3. O acesso `0.0.0.0/0` do Atlas usado neste roteiro é **um laboratório descartável**, com dados fictícios e prazo de expiração. Em projeto real não passa em revisão ([capítulo 5](todo-aula/05-mongodb-atlas.md)).
 
 ## Sobre a validação deste material
 
 - O código (`todo-api` e `todo-web`) foi executado: testes unitários e e2e da API contra PostgreSQL 18 e MongoDB 8 reais, imagem de produção construída e iniciada em container e o front testado em navegador (cadastro, upload de imagem, link anônimo).
-- Os comandos `gcloud` e `firebase` foram conferidos contra o `--help` das CLIs mais recentes e contra a documentação oficial. Como o material é a base da aula, **faça um ensaio completo em um projeto descartável antes de aplicar com a turma**.
+- Os comandos `gcloud` e `firebase` foram conferidos contra o `--help` das CLIs mais recentes e contra a documentação oficial. Mesmo assim, versões de CLIs e telas do Console mudam com o tempo: se um comando ou botão não se comportar como descrito, consulte o `--help` do comando, a documentação oficial e os [problemas comuns](todo-aula/11-validacao-custos-e-limpeza.md#4-problemas-comuns-visão-geral). Faça tudo em um projeto descartável e apague-o ao terminar.

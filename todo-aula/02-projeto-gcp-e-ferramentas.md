@@ -1,6 +1,6 @@
 # 2. Projeto no GCP, faturamento e ferramentas
 
-Tudo no GCP vive dentro de um **projeto**: é a fronteira de permissões, de faturamento e de exclusão. Apagar o projeto apaga todos os recursos dentro dele, o que o torna o melhor botão de "desfazer" para uma aula.
+Tudo no GCP vive dentro de um **projeto**: é a fronteira de permissões, de faturamento e de exclusão. Apagar o projeto apaga todos os recursos dentro dele, o que o torna o melhor botão de "desfazer" para um laboratório como este.
 
 [← Arquivos de configuração](01-arquivos-de-configuracao.md) · [README](../README.md) · [Próximo: rede →](03-rede-vpc-e-conexao-privada.md)
 
@@ -85,7 +85,7 @@ gcloud config get-value project
 1. Abra o [Console do Google Cloud](https://console.cloud.google.com/) e clique no **seletor de projetos** (topo da página).
 2. Clique em **Novo projeto**.
 3. **Nome do projeto:** `Todo Aula`. Clique em **Editar** ao lado do ID e informe o seu `PROJECT_ID`.
-4. **Local:** deixe *Sem organização* (conta pessoal) ou a pasta indicada pelo professor.
+4. **Local:** deixe *Sem organização* (conta pessoal) ou a pasta indicada pelo seu professor.
 5. Clique em **Criar** e selecione o projeto criado no seletor.
 
 ## Passo 4 — Vincular o faturamento

@@ -26,9 +26,9 @@ O banco PostgreSQL **não terá IP público**. Para a API (no Cloud Run) alcanç
 | Acesso de outras redes (VPN, outras VPCs) | Precisa exportar rotas do peering | O endpoint é acessível conforme suas rotas normais |
 | Custo extra | Nenhum | Endpoint: **US$ 0,01/h** (~US$ 7,30/mês) + processamento de dados |
 | Configuração | Mais simples (é o assistente do Console) | Mais passos (instância PSC, endpoint, regra de encaminhamento) |
-| Indicado para | A maioria dos projetos; **nossa aula** | Muitos clientes/projetos, redes com IPs sobrepostos, isolamento forte |
+| Indicado para | A maioria dos projetos; **este roteiro** | Muitos clientes/projetos, redes com IPs sobrepostos, isolamento forte |
 
-> **Nesta aula usamos o peering.** É o mais simples, gratuito e é a configuração que o próprio assistente de criação do Cloud SQL sugere. A seção [Alternativa: PSC](#alternativa-private-service-connect) mostra os comandos equivalentes para comparar.
+> **Neste roteiro usamos o peering.** É o mais simples, gratuito e é a configuração que o próprio assistente de criação do Cloud SQL sugere. A seção [Alternativa: PSC](#alternativa-private-service-connect) mostra os comandos equivalentes para comparar.
 
 ## O que vamos criar
 
@@ -145,7 +145,7 @@ gcloud services vpc-peerings list --network="$VPC" --format="value(peering,state
 
 ## Alternativa: Private Service Connect
 
-Comparativo apenas. **Não execute** na aula (cria custo extra). O fluxo oficial para o Cloud SQL é:
+Comparativo apenas. **Não execute** neste roteiro (cria custo extra). O fluxo oficial para o Cloud SQL é:
 
 ```bash
 # 1) Instância com PSC (em vez de --network do peering)
@@ -223,7 +223,7 @@ Depois, redeploy o serviço com `--vpc-egress=all-traffic` (capítulo 9).
 
 Fontes: [preços de rede VPC](https://cloud.google.com/vpc/network-pricing), [Cloud NAT](https://cloud.google.com/nat/pricing) e [Cloud Run](https://cloud.google.com/run/pricing), consultadas em 20/09/2026 (`us-central1`).
 
-| Recurso | Preço oficial | Estimativa mensal (uso da aula) |
+| Recurso | Preço oficial | Estimativa mensal (uso deste roteiro) |
 |---|---|---|
 | VPC e sub-rede | Sem cobrança | US$ 0,00 |
 | IPs internos | Sem cobrança | US$ 0,00 |
@@ -234,7 +234,7 @@ Fontes: [preços de rede VPC](https://cloud.google.com/vpc/network-pricing), [Cl
 | *Opcional:* Cloud NAT, IP em uso | US$ 0,005/h | US$ 3,65 (730 h) |
 | *Opcional:* Cloud NAT, gateway | US$ 0,0014/h por instância usando o gateway | até ~US$ 1,02 (1 instância 24 h); zero sem instâncias |
 | *Opcional:* Cloud NAT, dados | US$ 0,045/GiB processado | ~US$ 0,00 (poucos MB) |
-| *Opcional:* total do NAT | | **~US$ 3,65 a US$ 4,67 por mês; ~US$ 0,03 para uma aula de 6 h** |
+| *Opcional:* total do NAT | | **~US$ 3,65 a US$ 4,67 por mês; ~US$ 0,03 para uma sessão de 6 h** |
 | *Comparativo:* endpoint PSC | US$ 0,01/h + processamento de dados | ~US$ 7,30 |
 
 ---

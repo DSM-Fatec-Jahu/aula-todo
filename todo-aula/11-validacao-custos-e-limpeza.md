@@ -1,6 +1,6 @@
 # 11. Validação de ponta a ponta, custo total e limpeza
 
-Tudo publicado. Falta **provar que funciona**, **fechar a conta** e **desligar o que gera custo**. Este é o capítulo em que a aula termina: o app só está "pronto" depois de validado, e a infraestrutura só está "encerrada" depois de apagada.
+Tudo publicado. Falta **provar que funciona**, **fechar a conta** e **desligar o que gera custo**. Este é o capítulo em que o roteiro termina: o app só está "pronto" depois de validado, e a infraestrutura só está "encerrada" depois de apagada.
 
 [← Firebase Hosting](10-firebase-hosting.md) · [README](../README.md)
 
@@ -96,7 +96,7 @@ gcloud projects get-iam-policy "$PROJECT_ID" \
 
 Todos os valores em **USD**, `us-central1`, preços oficiais consultados em 20/09/2026, 730 horas/mês. Cada linha detalha-se no capítulo indicado.
 
-| Recurso | Capítulo | Uma aula (~6 h ligado) | Mês inteiro ligado |
+| Recurso | Capítulo | Uma sessão (~6 h ligado) | Mês inteiro ligado |
 |---|---|---|---|
 | Projeto, APIs, orçamento | [2](02-projeto-gcp-e-ferramentas.md) | 0,00 | 0,00 |
 | VPC, sub-rede, peering, Direct VPC egress | [3](03-rede-vpc-e-conexao-privada.md) | 0,00 | 0,00 |
@@ -111,14 +111,14 @@ Todos os valores em **USD**, `us-central1`, preços oficiais consultados em 20/0
 
 Opcionais (não fazem parte do caminho principal):
 
-| Opcional | Onde | Uma aula | Mês inteiro |
+| Opcional | Onde | Uma sessão | Mês inteiro |
 |---|---|---|---|
 | Cloud NAT + IP estático (endurecer o Atlas) | [3](03-rede-vpc-e-conexao-privada.md) | ~0,03 | 3,65 a 4,67 |
 | Serviço com 1 instância mínima (sem *cold start*) | [9](09-cloud-run.md) | ~0,08 | ~9,72 |
 | Endpoint Private Service Connect (comparativo) | [3](03-rede-vpc-e-conexao-privada.md) | ~0,06 | ~7,30 |
 | Instância Cloud SQL maior (`db-g1-small`) | [4](04-cloud-sql-postgresql.md) | ~0,21 | ~25,55 + disco |
 
-> **Leitura correta da tabela:** tudo, exceto o **Cloud SQL**, cabe nas cotas gratuitas. O banco é o único item que cobra por hora, e é por isso que **a limpeza é parte da aula**. Se o Cloud SQL for esquecido por um mês: ≈ US$ 9,37.
+> **Leitura correta da tabela:** tudo, exceto o **Cloud SQL**, cabe nas cotas gratuitas. O banco é o único item que cobra por hora, e é por isso que **a limpeza faz parte da atividade**. Se o Cloud SQL for esquecido por um mês: ≈ US$ 9,37.
 
 Como o custo cresce com o uso (referência):
 
@@ -134,7 +134,7 @@ Como o custo cresce com o uso (referência):
 
 ## 3. Limpeza
 
-> Sem alerta de orçamento, uma instância esquecida só é notada na fatura. **Só encerre a aula depois de apagar.**
+> Sem alerta de orçamento, uma instância esquecida só é notada na fatura. **Só dê a atividade por encerrada depois de apagar tudo.**
 
 ### Opção A — apagar o projeto inteiro (mais simples e mais segura)
 

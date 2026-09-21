@@ -8,7 +8,7 @@ Antes de tocar na nuvem, deixamos os dois projetos **prontos para serem empacota
 
 ```text
 aula/
-├── README.md                  índice da aula (aponta para todo-aula/)
+├── README.md                  índice do roteiro (aponta para todo-aula/)
 ├── todo-api/                  NestJS 12 + Prisma 7 + Mongoose 9
 │   ├── Dockerfile             ← 1.4  imagem da API e imagem das migrations
 │   ├── .dockerignore          ← 1.5  o que NÃO entra na imagem
@@ -49,7 +49,7 @@ O projeto foi criado com o Nest CLI mais recente (`npx @nestjs/cli@latest new to
 | Campo | Valor | Significado |
 |---|---|---|
 | `name`, `version`, `description` | `todo-api`, `0.0.1`, texto livre | Identificam o projeto. Não são publicados em lugar nenhum |
-| `author`, `license` | vazio, `UNLICENSED` | Sem autor e sem licença de uso: é material de aula, não uma biblioteca |
+| `author`, `license` | vazio, `UNLICENSED` | Sem autor e sem licença de uso: é material didático, não uma biblioteca |
 | `private` | `true` | Impede um `npm publish` acidental |
 | `type` | `module` | Os arquivos `.js` são tratados como **ESM** (`import`/`export`). Por isso o `package.json` também vai para a imagem final: o Node o consulta para saber o formato |
 | `engines.node` | `>=24` | Versão mínima do Node. É a mesma da imagem `node:24-slim` |
@@ -315,7 +315,7 @@ CMD ["node", "dist/main.js"]
 
 Um detalhe do `runtime`: ele copia o `package.json` apenas para o Node saber que o projeto é ESM (`"type": "module"`, 1.1). Já o `migrate` traz o `prisma.config.ts` e a pasta `prisma/` porque é isso que o `prisma migrate deploy` lê.
 
-Decisões que valem discutir em aula:
+Decisões que vale a pena você entender:
 
 - **Cache de camadas:** `COPY package*.json` + `npm ci` vêm **antes** de `COPY . .`. Enquanto o `package-lock.json` não mudar, o Docker reaproveita as dependências.
 - **Tamanho:** sem `--omit=peer --omit=optional`, o `prisma` entrava na API como *peer opcional* do `@prisma/client` e a imagem passava de 945 MB. Com as flags, a API ficou com **572 MB** (medido no Docker local).
@@ -574,7 +574,7 @@ volumes:
 | `profiles: ["app"]` | Serviço **opcional**: só sobe com `--profile app`. Por isso `docker compose up -d postgres mongo` não inicia a API |
 | `depends_on` | Ordem de partida. `condition` diz o que esperar: `service_healthy` (passou no `healthcheck`) ou `service_completed_successfully` (terminou com código 0) |
 
-Detalhes que costumam pegar os alunos:
+Detalhes em que você pode tropeçar:
 
 - **`/var/lib/postgresql`:** desde a versão 18, a imagem oficial guarda os dados em uma subpasta desse diretório (por versão), por isso o volume é montado nele e não em `/var/lib/postgresql/data`.
 - **Portas dentro × fora:** o container `api` fala com `postgres:5432` e `mongo:27017` (nome do serviço e porta **interna**), não com `localhost:5433`. As portas 5433 e 27018 só valem para quem está **fora** dos containers, como o `npm run start:dev`.

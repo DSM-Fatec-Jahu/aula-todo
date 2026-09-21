@@ -155,7 +155,7 @@ curl -s -o /dev/null -w "%{http_code}\n" "https://storage.googleapis.com/$BUCKET
 
 Fonte: [Cloud Storage pricing](https://cloud.google.com/storage/pricing), `us-central1`, consultada em 20/09/2026.
 
-| Item | Preço oficial | Cota gratuita (Always Free) | Estimativa mensal (aula: ~50 MB, ~500 operações) |
+| Item | Preço oficial | Cota gratuita (Always Free) | Estimativa mensal (este roteiro: ~50 MB, ~500 operações) |
 |---|---|---|---|
 | Armazenamento Standard | US$ 0,000027397/GiB-h (≈ US$ 0,02/GiB-mês) | 5 GB-mês (`us-central1`, `us-east1`, `us-west1`) | US$ 0,00 |
 | Operações Classe A (gravar, listar) | US$ 0,005 por 1.000 | 5.000 por mês | US$ 0,00 |

@@ -94,7 +94,7 @@ atlas dbusers create --projectId "$ATLAS_PROJECT_ID" \
 
 ## Passo 3 — Liberar o acesso de rede
 
-O Atlas só aceita conexões de IPs cadastrados na **IP Access List**. O Cloud Run não tem IP de saída fixo, e o M0 não tem rede privada. Para a aula usamos `0.0.0.0/0` **com prazo de validade**.
+O Atlas só aceita conexões de IPs cadastrados na **IP Access List**. O Cloud Run não tem IP de saída fixo, e o M0 não tem rede privada. Neste laboratório usamos `0.0.0.0/0` **com prazo de validade**.
 
 **Console (Atlas)**
 
@@ -107,7 +107,7 @@ O Atlas só aceita conexões de IPs cadastrados na **IP Access List**. O Cloud R
 
 ```bash
 atlas accessLists create 0.0.0.0/0 --type cidrBlock \
-  --comment "laboratorio - remover ao final da aula" \
+  --comment "laboratorio - remover ao final do roteiro" \
   --deleteAfter "$(date -u -d '+1 day' +%Y-%m-%dT%H:%M:%SZ)" \
   --projectId "$ATLAS_PROJECT_ID"
 ```
@@ -156,7 +156,7 @@ printf '%s' "$MONGODB_URI" | gcloud secrets create todo-mongodb-uri \
 unset MONGO_PASSWORD MONGODB_URI
 ```
 
-## Passo 5 — Testar de fora (opcional, para a discussão de segurança)
+## Passo 5 — Testar de fora (opcional, para entender o risco de segurança)
 
 ```bash
 npx --yes mongosh "$(gcloud secrets versions access latest --secret=todo-mongodb-uri)" \
@@ -164,13 +164,13 @@ npx --yes mongosh "$(gcloud secrets versions access latest --secret=todo-mongodb
 # { ok: 1 }
 ```
 
-Com `0.0.0.0/0` **qualquer computador com a senha** conecta, inclusive o seu. Guarde este resultado para a discussão abaixo.
+Com `0.0.0.0/0` **qualquer computador com a senha** conecta, inclusive o seu. Guarde este resultado: você vai compará-lo com o teste do exercício da seção abaixo.
 
 ---
 
 ## Aviso de segurança: o acesso `0.0.0.0/0` é uma falha conhecida
 
-Abrir o banco para **qualquer IP** deixa a defesa apenas na senha. A documentação do Atlas alerta que isso pode expor o deployment a acesso não autorizado, exfiltração de dados e outras atividades maliciosas (tradução livre), e o Atlas envia e-mail de aviso sempre que uma entrada `/0` é criada. Aceitamos na aula porque:
+Abrir o banco para **qualquer IP** deixa a defesa apenas na senha. A documentação do Atlas alerta que isso pode expor o deployment a acesso não autorizado, exfiltração de dados e outras atividades maliciosas (tradução livre), e o Atlas envia e-mail de aviso sempre que uma entrada `/0` é criada. Aceitamos neste laboratório porque:
 
 | Mitigação aplicada | Efeito |
 |---|---|
@@ -180,18 +180,18 @@ Abrir o banco para **qualquer IP** deixa a defesa apenas na senha. A documentaç
 | Dados fictícios | Nada sensível a vazar |
 | Entrada **temporária** (6 h, 1 dia ou 1 semana) | O buraco fecha sozinho |
 | Senha no **Secret Manager** | Nunca em arquivo ou código |
-| Cluster apagado após a aula | Superfície de ataque zerada |
+| Cluster apagado ao terminar o roteiro | Superfície de ataque zerada |
 
-### Como corrigir (demonstração em aula)
+### Como corrigir (exercício opcional)
 
 | Nível | Como | Custo adicional | Resultado |
 |---|---|---|---|
 | **Bom** | **IP fixo**: `--vpc-egress=all-traffic` + Cloud NAT com IP estático ([capítulo 3](03-rede-vpc-e-conexao-privada.md#endurecimento-opcional-cloud-nat-com-ip-fixo)). Substitua `0.0.0.0/0` pelo IP do NAT na *IP Access List* | ~US$ 3,65 a 4,67/mês | Só a sua API conecta; a senha sozinha não basta |
 | **Melhor** | Atlas **M10+** com **Private Service Connect** ou peering | Plano pago do Atlas | Sem exposição à internet |
 
-Roteiro da demonstração:
+Faça você mesmo, nesta ordem:
 
-1. Rode o teste do Passo 5 no seu computador → funciona (falha demonstrada).
+1. Rode o teste do Passo 5 no seu computador → funciona. Essa é a falha que você vai corrigir.
 2. Crie o NAT, faça o deploy com `all-traffic` e cadastre o IP do NAT no Atlas.
 3. **Remova** a entrada `0.0.0.0/0`.
 4. Repita o teste do Passo 5 → agora **falha** (`connection timed out` / `MongoServerSelectionError`), e a API no Cloud Run continua funcionando.

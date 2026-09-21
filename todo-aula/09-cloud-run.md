@@ -254,7 +254,7 @@ Fonte: [Cloud Run pricing](https://cloud.google.com/run/pricing), `us-central1` 
 
 | Cenário | Cálculo | Estimativa mensal |
 |---|---|---|
-| **Aula**: 2.000 requisições de 300 ms (1 vCPU, 0,5 GiB) | 600 vCPU-s; 300 GiB-s; 2.000 requisições — tudo dentro da cota | **US$ 0,00** |
+| **Este roteiro**: 2.000 requisições de 300 ms (1 vCPU, 0,5 GiB) | 600 vCPU-s; 300 GiB-s; 2.000 requisições — tudo dentro da cota | **US$ 0,00** |
 | **Uso leve**: 300.000 requisições de 200 ms | 60.000 vCPU-s; 30.000 GiB-s; 0,3 M requisições — tudo dentro da cota | **US$ 0,00** |
 | Ponto em que a cota de CPU acaba | 180.000 vCPU-s ÷ 0,2 s ≈ **900 mil requisições/mês** (com 1 requisição por vez) | acima disso: US$ 0,000024 por vCPU-s |
 | **Job de migrations**: 1 execução (mínimo cobrado: 1 minuto) | 60 s × US$ 0,000018 + 30 GiB-s × US$ 0,000002 ≈ US$ 0,0011 | **US$ 0,00** (cota do job) |

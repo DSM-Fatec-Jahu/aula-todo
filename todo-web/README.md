@@ -1,6 +1,6 @@
 # todo-web
 
-Front-end do app de tarefas usado na aula de computação em nuvem (GCP).
+Front-end do app de tarefas usado na atividade de computação em nuvem (GCP).
 
 **Stack:** React 19.3 · Vite 8 · TypeScript 7 · React Router 8 · CSS puro (claro/escuro automático)
 

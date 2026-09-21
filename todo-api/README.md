@@ -1,6 +1,6 @@
 # todo-api
 
-API do app de tarefas usado na aula de computação em nuvem (GCP). O foco da aula é a hospedagem; o app é só o veículo.
+API do app de tarefas usado na atividade de computação em nuvem (GCP). O foco da atividade é a hospedagem; o app é só o veículo: o que importa é onde e como ele roda.
 
 **Stack:** NestJS 12 · Prisma 7.10 + PostgreSQL 18 · Mongoose 9 + MongoDB 8 · Cloud Storage (signed URLs) · Node 24
 

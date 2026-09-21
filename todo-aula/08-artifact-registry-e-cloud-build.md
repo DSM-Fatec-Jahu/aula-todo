@@ -1,6 +1,6 @@
 # 8. Artifact Registry e Cloud Build: as imagens na nuvem
 
-O Cloud Run executa **imagens de container**, mas ele não as constrói: precisa que elas estejam em um **registro**. Usamos o **Artifact Registry** para guardá-las e o **Cloud Build** para construí-las **na nuvem** (a partir do `Dockerfile` do capítulo 1), sem precisar de Docker na máquina do aluno.
+O Cloud Run executa **imagens de container**, mas ele não as constrói: precisa que elas estejam em um **registro**. Usamos o **Artifact Registry** para guardá-las e o **Cloud Build** para construí-las **na nuvem** (a partir do `Dockerfile` do capítulo 1), sem precisar de Docker na sua máquina.
 
 [← Secret Manager](07-secret-manager.md) · [README](../README.md) · [Próximo: Cloud Run →](09-cloud-run.md)
 
@@ -106,7 +106,7 @@ O Console é o melhor lugar para **acompanhar** o build:
 1. **☰ → Cloud Build → Histórico**, selecione a região `us-central1`.
 2. Clique no build em andamento para ver os passos `build-api` e `build-migrate` e o log de cada um.
 
-> Para construir automaticamente a cada `git push`, **Cloud Build → Gatilhos → Criar gatilho** conecta um repositório do GitHub. Não usaremos na aula.
+> Para construir automaticamente a cada `git push`, **Cloud Build → Gatilhos → Criar gatilho** conecta um repositório do GitHub. Não usaremos neste roteiro.
 
 ## Passo 4 — Conferir as imagens
 
@@ -153,7 +153,7 @@ Fontes: [Artifact Registry pricing](https://cloud.google.com/artifact-registry/p
 | Armazenamento do código-fonte enviado (bucket do Cloud Build) | Preço do Cloud Storage | 5 GB-mês (`us-central1`) | US$ 0,00 |
 | **Total** | | | **US$ 0,00 a ~US$ 0,05** |
 
-> **Dica de custo:** apague versões antigas (`gcloud artifacts docker images delete $REGISTRY/todo-api:1.0.0 --delete-tags`) e, no fim da aula, o repositório inteiro.
+> **Dica de custo:** apague versões antigas (`gcloud artifacts docker images delete $REGISTRY/todo-api:1.0.0 --delete-tags`) e, ao terminar o roteiro, o repositório inteiro.
 
 ---
 
