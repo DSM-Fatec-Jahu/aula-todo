@@ -24,6 +24,8 @@ Senhas e chaves **não** entram no código, na imagem Docker nem em variáveis d
 | `todo-jwt-secret` | Chave que assina os tokens de login (64 caracteres aleatórios) | **Este capítulo** | `JWT_SECRET` |
 | `todo-database-url` | `postgresql://todo_app:SENHA@IP_PRIVADO:5432/todo` | **Este capítulo** | `DATABASE_URL` |
 
+> `todo-db-password` e `todo-mongodb-uri` já existem desde os capítulos 4 e 5 (o comando `gcloud secrets create` e a opção pelo Console foram explicados lá, no momento em que a senha e a URI ainda estavam na memória do terminal). Aqui criamos os **2 segredos que faltam** e, principalmente, a identidade que tem permissão para ler os 3 usados pela API.
+
 ## O que vamos criar
 
 | Recurso | Nome | Configuração |

@@ -108,7 +108,7 @@ gcloud sql users list --instance="$SQL_INSTANCE"
 
 ## Passo 3 — Guardar a senha (Secret Manager)
 
-O terminal em que `DB_PASSWORD` existe pode ser fechado; a senha não pode ficar só na memória. Guardamos já no Secret Manager (detalhes no [capítulo 7](07-secret-manager.md)):
+O terminal em que `DB_PASSWORD` existe pode ser fechado; a senha não pode ficar só na memória. Guardamos já no **Secret Manager**, o cofre do GCP para valores sensíveis (senhas, chaves, URIs de conexão): cada segredo é um nome com uma ou mais **versões** imutáveis, e só quem tem a permissão `secretAccessor` naquele segredo consegue ler o valor.
 
 ```bash
 printf '%s' "$DB_PASSWORD" | gcloud secrets create todo-db-password \
@@ -117,7 +117,22 @@ printf '%s' "$DB_PASSWORD" | gcloud secrets create todo-db-password \
 unset DB_PASSWORD POSTGRES_ROOT_PASSWORD    # tire as senhas da memoria do terminal
 ```
 
+| Flag | Por quê |
+|---|---|
+| `todo-db-password` | Nome do segredo (o "cofre"); o valor em si vira a **versão 1** |
+| `printf '%s' "$DB_PASSWORD" \|` | Envia a senha pelo *pipe*, sem nunca escrevê-la em um arquivo ou aparecer inteira num comando (que ficaria no histórico do shell) |
+| `--data-file=-` | O `-` diz ao `gcloud` para ler o valor da entrada padrão (o que veio do `printf`), em vez de um arquivo |
+| `--replication-policy=automatic` | O Google escolhe onde replicar o segredo; mais simples que escolher regiões manualmente |
+
+**Console**
+
+1. **☰ → Segurança → Secret Manager → Criar secret**.
+2. **Nome:** `todo-db-password`. **Valor do secret:** cole a senha gerada para `todo_app` no passo 2 (releia com `echo "$DB_PASSWORD"` antes de fechar o terminal, se precisar).
+3. Mantenha a política de replicação padrão (**Automática**) e clique em **Criar secret**.
+
 > A senha do `postgres` (administrador) foi só gerada e descartada: não precisamos dela. Se um dia precisar, redefina com `gcloud sql users set-password postgres --instance=$SQL_INSTANCE --password=...`.
+>
+> Este segredo ainda não é lido por ninguém: a conta de serviço da API e a permissão `secretAccessor` só são criadas no [capítulo 7](07-secret-manager.md), que também explica os conceitos de conta de serviço e papéis (roles) do IAM.
 
 ## Passo 4 — Descobrir o IP privado
 

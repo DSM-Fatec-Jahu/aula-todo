@@ -146,7 +146,7 @@ export MONGODB_URI="mongodb+srv://todo_app:${MONGO_PASSWORD}@todo.xxxxxxx.mongod
 
 A URI **não leva o nome do banco**: a API o recebe em `MONGODB_DB=todo` (variável do Cloud Run).
 
-**Guarde a URI agora no Secret Manager** (detalhes no [capítulo 7](07-secret-manager.md)) e limpe a memória do terminal. **Não a salve em arquivos.**
+**Guarde a URI agora no Secret Manager** — o mesmo cofre usado no capítulo 4 para a senha do Postgres — e limpe a memória do terminal. **Não a salve em arquivos.**
 
 ```bash
 source ~/todo-aula.env
@@ -155,6 +155,21 @@ printf '%s' "$MONGODB_URI" | gcloud secrets create todo-mongodb-uri \
 
 unset MONGO_PASSWORD MONGODB_URI
 ```
+
+| Flag | Por quê |
+|---|---|
+| `todo-mongodb-uri` | Nome do segredo; a URI inteira vira a **versão 1** |
+| `printf '%s' "$MONGODB_URI" \|` | Passa a URI (com a senha embutida) pelo *pipe*, sem gravar em arquivo nem deixar rastro no histórico do shell |
+| `--data-file=-` | Lê o valor da entrada padrão em vez de um arquivo |
+| `--replication-policy=automatic` | Replicação automática, igual à do `todo-db-password` |
+
+**Console**
+
+1. **☰ → Segurança → Secret Manager → Criar secret**.
+2. **Nome:** `todo-mongodb-uri`. **Valor do secret:** cole a URI completa montada acima (com o usuário e a senha).
+3. Mantenha a política de replicação padrão e clique em **Criar secret**.
+
+> Assim como o `todo-db-password`, este segredo só poderá ser lido pela API depois que o [capítulo 7](07-secret-manager.md) criar a conta de serviço e conceder a permissão `secretAccessor`.
 
 ## Passo 5 — Testar de fora (opcional, para entender o risco de segurança)
 

@@ -196,6 +196,8 @@ MAX_UPLOAD_BYTES=10485760
 
 O comando do comentário do `JWT_SECRET` (`node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`) sorteia 48 bytes aleatórios e os escreve em base64: resulta em 64 caracteres.
 
+> As três linhas marcadas **Secret Manager** ganham vida aos poucos: a senha do Postgres vira o segredo `todo-db-password` no [capítulo 4](04-cloud-sql-postgresql.md), a URI do Atlas vira `todo-mongodb-uri` no [capítulo 5](05-mongodb-atlas.md), e o `JWT_SECRET` só é criado (junto com a montagem final do `DATABASE_URL`) no [capítulo 7](07-secret-manager.md), que também explica os comandos `gcloud secrets create` usados nos capítulos anteriores.
+
 A API **valida** essas variáveis na inicialização (`src/config/env.validation.ts`): se `JWT_SECRET` for curto ou `GCS_BUCKET` faltar com `STORAGE_DRIVER=gcs`, ela nem sobe. Falhar cedo é melhor do que falhar em produção.
 
 ## 1.3 `todo-api/prisma.config.ts`
