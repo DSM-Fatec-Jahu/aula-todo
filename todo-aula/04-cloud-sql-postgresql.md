@@ -15,20 +15,88 @@ O Cloud SQL é o PostgreSQL **gerenciado** do Google: ele cuida de instalação,
 
 ## O que vamos criar
 
+
 | Configuração | Valor | Observação |
-|---|---|---|
+| --- | --- | --- |
 | ID da instância | `todo-pg` | `$SQL_INSTANCE` |
 | Versão | **PostgreSQL 18** (`POSTGRES_18`) | Versão padrão do Cloud SQL em 20/09/2026; **não pode ser alterada** depois de criada |
 | Edição | Enterprise | Obrigatória para shared-core |
 | Tipo de máquina | `db-f1-micro` (shared-core) | Sem SLA |
-| Região | `us-central1` | |
+| Região | `us-central1` |  |
 | Disponibilidade | Zonal | Sem alta disponibilidade (lab) |
-| Armazenamento | SSD, **10 GiB** (mínimo), sem aumento automático | Evita crescimento permanente e surpresa na fatura |
+| Armazenamento | HDD, **10 GiB** (mínimo), sem aumento automático | Evita crescimento permanente e surpresa na fatura |
 | Backups | Desativados | **Ative em produção** |
 | Proteção contra exclusão | Desativada | **Ative em produção** |
 | Conectividade | **Somente IP privado**, VPC `todo-vpc` | `--network` + `--no-assign-ip` |
 | Banco | `todo` | `$DB_NAME` |
 | Usuário da aplicação | `todo_app` | `$DB_USER`, senha aleatória |
+
+
+## Antes do Passo 1 — Se for usar o Console, gere as senhas no shell
+
+> [!WARNING]
+> **Não use o botão *Gerar* do Console do Google** para criar senhas de banco. Ele inclui caracteres especiais (por exemplo `>OA?NTTM"2.DMtRs`) que **quebram a string de conexão**: `>`, `?`, `"`, `@`, `#`, `/`, `:` e outros têm significado dentro de uma URL e fazem o Prisma (e outros clientes) falhar ao conectar.
+>
+> Quem fizer o capítulo pelo **Console** deve, **antes de começar o Passo 1**, gerar **duas senhas** no **Cloud Shell** (ícone `>_` no canto superior direito do Console) e anotá-las.
+
+Rode **duas vezes** o comando abaixo, uma para cada senha:
+
+```bash
+echo "$(openssl rand -base64 24 | tr '+/' '-_' | tr -d '=')"
+```
+
+Ele imprime 32 caracteres usando apenas letras, números, `-` e `_`: seguros em URL e em qualquer shell, sem precisar de escape.
+
+Anote as duas saídas (bloco de notas ou gerenciador de senhas) com **os nomes abaixo**; os passos seguintes se referem a elas por esses nomes:
+
+| Nome na anotação | Para que serve | Onde será usada |
+|---|---|---|
+| `SENHA_POSTGRES` | Senha do administrador `postgres` | Passo 1 (Console, item 3) |
+| `SENHA_TODO_APP` | Senha do usuário da aplicação `todo_app` | Passo 2 (Console, item 3) e Passo 3 (Console, item 2) |
+
+> Quem usa os comandos de **Terminal** não precisa deste passo: os blocos de código já geram as senhas com `base64url`, que tem o mesmo efeito.
+
+### E se a senha já tiver caracteres especiais? (Prisma e URL Encode)
+
+Se você já criou o usuário com uma senha gerada pelo Console (ou escolheu uma com símbolos), a solução mais simples é **trocar a senha** pela gerada acima. Se não puder trocar, use a senha com **URL Encode (Percent-encoding)** dentro do `DATABASE_URL` do Prisma, substituindo cada caractere especial pelo código da tabela:
+
+| Caractere | Codificado | Caractere | Codificado |
+|:-:|:-:|:-:|:-:|
+| `>` | `%3E` | `<` | `%3C` |
+| `?` | `%3F` | `/` | `%2F` |
+| `"` | `%22` | `'` | `%27` |
+| `@` | `%40` | `:` | `%3A` |
+| `#` | `%23` | `%` | `%25` |
+| `&` | `%26` | `=` | `%3D` |
+| `+` | `%2B` | `,` | `%2C` |
+| `;` | `%3B` | `!` | `%21` |
+| `$` | `%24` | `*` | `%2A` |
+| `(` | `%28` | `)` | `%29` |
+| `[` | `%5B` | `]` | `%5D` |
+| `{` | `%7B` | `}` | `%7D` |
+| `\` | `%5C` | `^` | `%5E` |
+| `` ` `` | `%60` | `\|` | `%7C` |
+| espaço | `%20` | | |
+
+Letras, números, `-`, `_`, `.` e `~` **não** precisam ser codificados.
+
+Exemplo, com a senha `>OA?NTTM"2.DMtRs`:
+
+```text
+Senha original : >OA?NTTM"2.DMtRs
+Senha codificada: %3EOA%3FNTTM%222.DMtRs
+
+DATABASE_URL="postgresql://todo_app:%3EOA%3FNTTM%222.DMtRs@10.x.x.x:5432/todo"
+```
+
+Para codificar sem errar, deixe o Node fazer o trabalho (as aspas simples evitam que o shell interprete a senha):
+
+```bash
+node -e "console.log(encodeURIComponent(process.argv[1]))" '>OA?NTTM"2.DMtRs'
+# %3EOA%3FNTTM%222.DMtRs
+```
+
+> Codifique **somente a senha dentro da URL**. No Cloud SQL e no Secret Manager, guarde a senha **original** (sem codificar).
 
 ## Passo 1 — Criar a instância
 
@@ -46,7 +114,7 @@ gcloud sql instances create "$SQL_INSTANCE" \
   --tier=db-f1-micro \
   --region="$REGION" \
   --availability-type=zonal \
-  --storage-type=SSD \
+  --storage-type=HDD \
   --storage-size=10 \
   --no-storage-auto-increase \
   --no-backup \
@@ -71,13 +139,13 @@ gcloud sql instances create "$SQL_INSTANCE" \
 
 1. **☰ → SQL** (Cloud SQL) → **Criar instância**.
 2. Escolha **PostgreSQL**. Em *Escolha uma edição do Cloud SQL* selecione **Enterprise** e, em *Predefinição de edição*, **Sandbox** (ou ajuste manualmente abaixo).
-3. **Versão do banco de dados:** *PostgreSQL 18*. **ID da instância:** `todo-pg`. **Senha do usuário postgres:** clique em *Gerar* e guarde-a.
+3. **Versão do banco de dados:** *PostgreSQL 18*. **ID da instância:** `todo-pg`. **Senha do usuário postgres:** cole a `SENHA_POSTGRES` anotada em *Antes do Passo 1* (**não** clique em *Gerar*).
 4. **Região:** `us-central1`. **Disponibilidade por zona:** *Zona única*.
 5. Expanda **Mostrar opções de configuração**:
    - **Tipo de máquina:** *Núcleo compartilhado* → **1 vCPU, 0,6 GB** (`db-f1-micro`).
-   - **Armazenamento:** *SSD*, capacidade **10 GB**, **desmarque** *Ativar aumentos automáticos de armazenamento*.
-   - **Conexões:** **desmarque** *IP público*; marque **IP privado**, marque **Acesso a serviços privados**, escolha a rede `todo-vpc` e, em *Intervalo de IP alocado*, **Automático** (ou `todo-psa-range`).
-   - **Proteção de dados:** desmarque *Backups automáticos* e *Ativar proteção contra exclusão*.
+   - **Armazenamento:** *HDD*, capacidade **10 GB**, **desmarque** *Ativar aumentos automáticos de armazenamento*.
+   - **Conexões:** **desmarque** *IP público*; marque **IP privado**, marque **Acesso a serviços particulares (PSA)**, escolha a rede `todo-vpc` e, em *Intervalo de IP alocado*, **Automático** (ou `todo-psa-range`).
+   - **Proteção de dados:** desmarque *Backups diários automatizados* e *Impedir a exclusão da instância*.
 6. Clique em **Criar instância**.
 
 Se o Console disser que falta configurar a conexão privada, clique em **Configurar conexão**; ele repete os passos 2 e 3 do capítulo 3.
@@ -104,7 +172,7 @@ gcloud sql users list --instance="$SQL_INSTANCE"
 
 1. Abra a instância `todo-pg`.
 2. Menu lateral **Bancos de dados → Criar banco de dados**: nome `todo` → **Criar**.
-3. Menu lateral **Usuários → Adicionar conta de usuário**: *Autenticação integrada*, nome `todo_app`, senha (gere uma aleatória e anote) → **Adicionar**.
+3. Menu lateral **Usuários → Adicionar conta de usuário**: *Autenticação integrada*, nome `todo_app`, senha: cole a `SENHA_TODO_APP` anotada em *Antes do Passo 1* (**não** clique em *Gerar*) → **Adicionar**.
 
 ## Passo 3 — Guardar a senha (Secret Manager)
 
@@ -127,7 +195,7 @@ unset DB_PASSWORD POSTGRES_ROOT_PASSWORD    # tire as senhas da memoria do termi
 **Console**
 
 1. **☰ → Segurança → Secret Manager → Criar secret**.
-2. **Nome:** `todo-db-password`. **Valor do secret:** cole a senha gerada para `todo_app` no passo 2 (releia com `echo "$DB_PASSWORD"` antes de fechar o terminal, se precisar).
+2. **Nome:** `todo-db-password`. **Valor do secret:** cole a `SENHA_TODO_APP` (a mesma usada no Passo 2; se estiver pelo Terminal, releia com `echo "$DB_PASSWORD"` antes de fechá-lo).
 3. Mantenha a política de replicação padrão (**Automática**) e clique em **Criar secret**.
 
 > A senha do `postgres` (administrador) foi só gerada e descartada: não precisamos dela. Se um dia precisar, redefina com `gcloud sql users set-password postgres --instance=$SQL_INSTANCE --password=...`.
@@ -143,12 +211,16 @@ echo "$DB_PRIVATE_IP"        # algo como 10.x.x.x ou 172.x.x.x (dentro da faixa 
 gcloud sql instances describe "$SQL_INSTANCE" --format="table(ipAddresses.type,ipAddresses.ipAddress)"   # PRIVATE
 ```
 
-No Console: instância → **Visão geral** → **Conectar a esta instância** → *Endereço IP privado*.
+**Console**
+1. Retorne ao menu **☰ → SQL** (Cloud SQL) e abra a instância `todo-pg`.
+2. No menu lateral esquerdo, clique em **Conexões**.
+3. Na aba **Resumo**, localize a seção **Rede** → **Acesso a serviços particulares (PSA)**.
+4. Copie o valor exibido em **Endereço IP interno** (ex.: `10.205.0.3`).
 
 O **`DATABASE_URL`** que a API usará será:
 
 ```text
-postgresql://todo_app:SENHA@IP_PRIVADO:5432/todo
+postgresql://todo_app:SENHA@IP_INTERNO:5432/todo
 ```
 
 Ele é montado e guardado como segredo no capítulo 7.

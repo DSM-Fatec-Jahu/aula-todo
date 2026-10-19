@@ -128,12 +128,24 @@ gcloud billing budgets create \
 ```
 
 **Console**
-
-1. **☰ → Faturamento → Orçamentos e alertas → Criar orçamento**.
-2. **Escopo:** nome `todo-aula`; em *Projetos*, selecione o seu; *Serviços*: todos.
-3. **Valor:** *Valor especificado* → `10` (na moeda da conta).
-4. **Ações:** limites em 50%, 90% e 100% do valor real; mantenha a notificação por e-mail.
-5. Clique em **Concluir**.
+1. *☰ → Faturamento → Orçamentos e alertas (Budgets & caps) → Criar orçamento*.
+2. *Definir:*
+   - Selecione **Somente alertas**.
+   - *Nome:* `todo-aula`.
+   - Clique em **Avançar**.
+3. *Escopo:*
+   - *Intervalo de tempo:* **Mensalmente**.
+   - *Projetos:* desmarque "Todos os projetos" e selecione **apenas o seu projeto** (`$PROJECT_ID`).
+   - *Serviços:* **Todos os serviços**.
+   - *Labels e Economia:* mantenha as opções padrão e clique em **Avançar**.
+4. *Valor:*
+   - *Tipo de orçamento:* **Valor especificado**.
+   - *Valor:* `10` (ou `50` caso a moeda da sua conta de faturamento seja BRL).
+   - Clique em **Avançar**.
+5. *Ações:*
+   - Configure os limites em **50%**, **90%** e **100%** do gasto real.
+   - Mantenha habilitada a notificação por e-mail para administradores/usuários de faturamento.
+6. Clique em **Concluir**.
 
 ## Passo 6 — Ativar as APIs
 

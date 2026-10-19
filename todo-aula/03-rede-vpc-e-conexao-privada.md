@@ -90,7 +90,7 @@ gcloud compute addresses list --global --filter="purpose=VPC_PEERING"
 **Console**
 
 1. **☰ → Rede VPC → Redes VPC** e clique em `todo-vpc`.
-2. Aba **Acesso privado a serviços** → sub-aba **Intervalos de IP alocados para serviços** → **Alocar intervalo de IP**.
+2. Aba **Acesso a serviços particulares** → sub-aba **Intervalos de IP alocados para serviços** → **Alocar intervalo de IP**.
 3. **Nome:** `todo-psa-range`. Em *Intervalo de endereços IP* escolha **Automático** e **comprimento do prefixo** `16`.
 4. Clique em **Alocar**.
 
@@ -112,7 +112,7 @@ O comando devolve uma **operação de longa duração**; espere terminar (alguns
 
 **Console**
 
-1. Em `todo-vpc`, aba **Acesso privado a serviços** → sub-aba **Conexões privadas com serviços** → **Criar conexão**.
+1. Em `todo-vpc`, aba **Acesso a serviços particulares** → sub-aba **Conexões particulares com serviços** → **Criar conexão**.
 2. Em *Alocação atribuída*, escolha `todo-psa-range`.
 3. Clique em **Conectar**.
 
