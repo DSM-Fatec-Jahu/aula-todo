@@ -65,11 +65,12 @@ npx --yes firebase-tools@latest projects:list
 
 **Console**
 
-1. Acesse o [Console do Firebase](https://console.firebase.google.com/) → **Criar um projeto** (ou *Adicionar projeto*).
-2. Em vez de digitar um nome novo, clique em **Selecionar um projeto do Google Cloud** (*Add Firebase to Google Cloud project*) e escolha `Todo Aula`.
-3. Confirme o **plano de preços Blaze** (o projeto já tem faturamento) e os termos.
-4. Google Analytics: pode **desativar** (não usamos).
-5. Clique em **Continuar** / **Adicionar Firebase**.
+1. Acesse o [Console do Firebase](https://console.firebase.google.com/) (URL: `https://console.firebase.google.com/`) e clique em **Comece configurando um Projeto do Firebase**.
+2. Na tela **Criar um projeto**, **não** digite um nome novo. Clique no link **Adicionar o Firebase ao projeto do Google Cloud** (abaixo do botão *Continuar*).
+3. Em **Selecionar um projeto do Google Cloud**, abra a lista, escolha `Todo Aula` e clique em **Continuar**.
+4. Em **Algumas informações para lembrar ao adicionar o Firebase a um projeto do Google Cloud**, leia os avisos (a ação não pode ser desfeita; faturamento e permissões do IAM são compartilhados com o Google Cloud; excluir o projeto no Firebase exclui também o projeto no Google Cloud) e clique em **Continuar**.
+5. Em **Confirmar plano de preços do Firebase**, o console informa que, como o projeto já tem faturamento, será usado o plano **Blaze** (pagamento por utilização). Clique em **Confirmar e continuar**.
+6. Em **Google Analytics para seu projeto do Firebase**, a opção **Ativar o Google Analytics neste projeto** vem **marcada** (Recomendado). **Desative-a** (não usamos) e clique em **Adicionar o Firebase** (nesta tela o botão pode aparecer como **Continuar**).
 
 > O comando (ou o assistente) também ativa as APIs `firebase.googleapis.com` e `firebasehosting.googleapis.com`.
 
@@ -101,6 +102,20 @@ O código do front chama sempre `/api`, então **não há variável de ambiente 
 
 ## Passo 4 — Publicar
 
+**Antes do primeiro deploy: ativar o Hosting no Console**
+
+A partir de outubro de 2026, o Firebase **não cria mais o site padrão automaticamente** em projetos novos (o console avisa: *"o provisionamento do site padrão será feito sob demanda"*). Por isso, no primeiro uso:
+
+1. Em **Hospedagem e sem servidor** → **Hosting** (ou `https://console.firebase.google.com/project/<PROJECT_ID>/hosting`), clique em **Vamos começar**.
+2. O assistente mostra os passos de instalar a CLI, inicializar e implantar. **Não precisamos executá-los** (o `firebase.json` já existe): avance com **Próxima** até concluir e clique em **Continuar para o console**.
+3. Confirme que o painel passou a listar o domínio `<PROJECT_ID>.web.app`.
+
+Se preferir pelo terminal (e o site ainda não existir):
+
+```bash
+npx --yes firebase-tools@latest hosting:sites:create "$PROJECT_ID" --project "$PROJECT_ID"
+```
+
 **Terminal**
 
 ```bash
@@ -110,12 +125,13 @@ npx --yes firebase-tools@latest deploy --only hosting --project "$PROJECT_ID"
 A saída termina com:
 
 ```text
+Project Console: https://console.firebase.google.com/project/<PROJECT_ID>/overview
 Hosting URL: https://<PROJECT_ID>.web.app
 ```
 
 **Console**
 
-1. **Firebase → Build → Hosting**. O painel mostra os domínios, o **histórico de versões** e o botão de **reversão**.
+1. No [Console do Firebase](https://console.firebase.google.com/), abra o projeto `Todo Aula`. No menu lateral, clique em **Hospedagem e sem servidor** (*Hosting and serverless*) → **Hosting**. Ou vá direto pela URL: `https://console.firebase.google.com/project/<PROJECT_ID>/hosting`. O painel mostra os domínios, o **histórico de versões** e o botão de **reversão**.
 2. (Deploy pelo Console não existe; o painel é para acompanhar e reverter.)
 
 Para conferir o **site ID**:

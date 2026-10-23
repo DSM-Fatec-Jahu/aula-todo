@@ -54,7 +54,7 @@ A API assume que as tabelas existem. Migrar **antes** do deploy evita que vária
 | Concorrência | 40 | |
 | Timeout | 60 s | O Firebase Hosting também corta em 60 s |
 | Porta | 8080 | O Cloud Run injeta `PORT=8080` |
-| CPU boost | Ligado | Mais CPU na subida: reduz o *cold start* |
+| CPU boost | Ligado | Mais CPU na subida: reduz o *cold start*. No Console: **Otimização da CPU de inicialização** |
 | Acesso | **Público** (`--no-invoker-iam-check`) | A própria API autentica com JWT |
 | Entrada (ingress) | `all` | O Firebase Hosting precisa alcançar o serviço |
 | Rede | VPC `todo-vpc`, sub-rede `todo-subnet-run`, egress `private-ranges-only` | Cloud SQL pela VPC; Atlas pela internet |
@@ -103,18 +103,31 @@ O `--wait` bloqueia até terminar. Veja o resultado:
 gcloud run jobs executions list --job="$JOB" --region="$REGION"
 ```
 
-O log deve conter `1 migration found in prisma/migrations` e `All migrations have been successfully applied.` (ou `Applying migration 20260920..._init`).
+O log deve conter `1 migration found in prisma/migrations`, `Applying migration 20260920..._init` e `All migrations have been successfully applied.`. Os avisos `prisma:warn ... libssl/openssl` que aparecem antes são esperados e não impedem a migration.
 
 **Console**
 
 1. **☰ → Cloud Run → Jobs → Criar job**.
-2. **URL da imagem de contêiner:** clique em **Selecionar** → *Artifact Registry* → `todo` → `todo-api-migrate` → tag `1.0.0`.
-3. **Nome do job:** `todo-api-migrate`. **Região:** `us-central1`. **Número de tarefas:** `1`. **Tentativas máximas:** `1`.
-4. Abra **Contêineres, volumes, conexões, segurança**:
-   - Aba **Contêiner** → **Variáveis e secrets → Referenciar um secret**: nome `DATABASE_URL`, secret `todo-database-url`, versão `1`. **Capacidade:** 1 CPU, 512 MiB, timeout `300`.
-   - Aba **Conexões** → **Conectar a uma VPC para tráfego de saída** → **Enviar tráfego diretamente para uma VPC**: rede `todo-vpc`, sub-rede `todo-subnet-run`, roteamento *Rotear apenas solicitações para IPs particulares para a VPC*.
-   - Aba **Segurança** → **Conta de serviço:** `todo-api-sa`.
-5. **Criar** e depois **Executar**. Acompanhe em **Execuções → Registros**.
+2. **URL da imagem do contêiner:** clique em **Selecionar** → *Artifact Registry* → `todo` → `todo-api-migrate` → tag `1.0.0`.
+3. **Nome de Job:** `todo-api-migrate`. **Região:** `us-central1`. **Número de tarefas:** `1`. Deixe **Atrasar execução** desmarcado.
+4. Expanda a seção **Contêineres, conexões, segurança** (ela tem três abas: *Contêineres*, *Conexões* e *Segurança*):
+   - Aba **Contêineres** → em **Editar contêiner**, sub-aba **Configurações** → **Recursos:** **Memória** `512 MiB` e **CPU** `1` (já são os padrões). Deixe **Comando do contêiner** e **Argumentos de contêiner** em branco para usar o comando da imagem.
+   - Ainda em **Editar contêiner**, sub-aba **Variáveis e secrets** → em **Secrets expostos como variáveis de ambiente**, clique em **Referenciar um secret**: nome `DATABASE_URL`, secret `todo-database-url`, versão `1`. Clique em **Concluir** para fechar o contêiner.
+   - Abaixo do contêiner, em **Capacidade da tarefa**: **Tempo limite da tarefa** `5` com **Unidade de tempo** `minuto` (= 300 s) e **Número de novas tentativas por tarefa com falha** `1` (o padrão é `3`). Em **Paralelismo**, mantenha o padrão.
+   - Aba **Conexões** → marque **Conectar a uma VPC para tráfego de saída** → **Enviar tráfego diretamente para uma VPC**: rede `todo-vpc`, sub-rede `todo-subnet-run`, Roteamento de tráfego *Encaminhar somente solicitações de IPs privados para a VPC*. Não adicione nada em **Conexões do Cloud SQL** (o banco é acessado pela VPC, não por esse recurso).
+   - Aba **Segurança** → **Conta de serviço:** troque `Default compute service account` por `todo-api-sa`. Mantenha o restante (autorização binária desmarcada, **Chave de criptografia gerenciada pelo Google**).
+5. Deixe **Executar job imediatamente** desmarcado e clique em **Criar**. Abre a página **Detalhes do job** (abas *Histórico*, *Observabilidade*, *Gatilhos* e *YAML*).
+6. No topo da página, clique em **Execução** (o botão com o ícone ▶) para rodar as migrations. Uma mensagem no rodapé avisa: *A execução todo-api-migrate-xxxxx do job foi criada*.
+7. Acompanhe na aba **Histórico**: a execução aparece na lista e, ao selecionar, o painel da direita mostra a **Visão geral das tarefas**. O resultado esperado é **1/1 concluídas**, ícone verde, **Último código de saída** `0` e **Novas tentativas** `0` (aba *Tarefas*).
+8. Para ler o log das migrations, abra **Observabilidade → Logs**. Os registros podem levar alguns segundos para aparecer (clique em **Atualizar** se necessário). Uma execução bem-sucedida mostra, nesta ordem:
+   - `Datasource "db": PostgreSQL database "todo", schema "public" at "10.x.x.x:5432"` (o IP privado confirma que a conexão passou pela VPC);
+   - `1 migration found in prisma/migrations` e `Applying migration 2026..._init`;
+   - `All migrations have been successfully applied.`;
+   - `Container called exit(0).` e, por último, `Execution todo-api-migrate-xxxxx has completed successfully.`
+
+   > Os avisos `prisma:warn Prisma failed to detect the libssl/openssl version` e `npm notice ... New major version of npm available` aparecem na execução e **não são erros**: a migration é aplicada normalmente.
+
+   Se a execução falhar, consulte [Problemas comuns](#problemas-comuns).
 
 ## Passo 2 — Implantar o serviço da API
 
@@ -161,18 +174,31 @@ gcloud run deploy "$SERVICE" \
 
 **Console**
 
-1. **☰ → Cloud Run → Serviços → Implantar contêiner → Serviço**.
-2. **Implantar uma revisão a partir de uma imagem existente** → selecione `todo-api` `1.0.0` no Artifact Registry.
-3. **Nome do serviço:** `todo-api`. **Região:** `us-central1`.
-4. **Autenticação:** *Permitir acesso público*. **Faturamento:** *Baseado em solicitação*.
-5. **Escalonamento do serviço:** instâncias mínimas `0`, máximas `2`. **Entrada:** *Todas*.
-6. Abra **Contêineres, volumes, rede, segurança**:
-   - **Contêiner → Configurações:** porta `8080`, memória `512 MiB`, CPU `1`, **Aumento de CPU de inicialização** marcado, tempo limite `60`, simultaneidade máxima `40`.
-   - **Contêiner → Variáveis e secrets:** adicione as variáveis do arquivo `env.yaml` e as 3 referências a secrets como variáveis (`DATABASE_URL`, `MONGODB_URI`, `JWT_SECRET`, versão `1`).
-   - **Contêiner → Verificações de integridade → Adicionar verificação → Inicialização:** HTTP, caminho `/api/health`, porta `8080`, período `5`, tolerância a falhas `30`, tempo limite `3`.
-   - **Rede:** *Conectar a uma VPC para tráfego de saída* → *Enviar tráfego diretamente para uma VPC* → rede `todo-vpc`, sub-rede `todo-subnet-run`, *Rotear apenas solicitações para IPs particulares*.
-   - **Segurança → Conta de serviço:** `todo-api-sa`.
-7. **Criar**. Aguarde a revisão ficar verde.
+1. **☰ → Cloud Run → Serviços → Implantar contêiner**. Abre a tela **Criar serviço**.
+2. Mantenha selecionado o cartão **Implantar a revisão de uma imagem de contêiner atual**. Em **URL da imagem do contêiner**, clique em **Selecionar** → *Artifact Registry* → `todo` → `todo-api` → tag `1.0.0`.
+3. Em **Configurar**, **Nome de Serviço:** `todo-api`. **Região:** `us-central1`. (O campo **URL do endpoint** mostra a URL `https://todo-api-<número>.us-central1.run.app` que o serviço terá. Não é preciso mexer em **URLs personalizados**.)
+4. **Autenticação:** *Permitir acesso público*. **Faturamento:** *Baseada em solicitações* (os dois já vêm marcados por padrão).
+5. **Escalonamento de serviços:** *Escalonamento automático*, **Número mínimo de instâncias** `0` e **Número máximo de instâncias** `2`. Não é preciso abrir *Personalizar fatores de escalonamento automático*. **Entrada:** *Todos*.
+6. Expanda a seção **Contêineres, rede, segurança** (abas *Contêineres*, *Rede* e *Segurança*):
+   - Aba **Contêineres** → em **Editar contêiner**, **Porta do contêiner:** `8080` (acima das sub-abas). Na sub-aba **Configurações** → **Recursos:** **Memória** `512 MiB` e **CPU** `1`.
+   - Sub-aba **Variáveis e secrets** → em **Variáveis de ambiente**, adicione as variáveis não secretas. O atalho é colar, no campo de nome, o bloco abaixo em formato `.env` (troque `<BUCKET>` e `<PROJECT_ID>` pelos seus valores):
+
+     ```text
+     NODE_ENV=production
+     STORAGE_DRIVER=gcs
+     GCS_BUCKET=<BUCKET>
+     MONGODB_DB=todo
+     DB_POOL_MAX=3
+     TRUST_PROXY_HOPS=1
+     CORS_ORIGINS=https://<PROJECT_ID>.web.app,https://<PROJECT_ID>.firebaseapp.com
+     ```
+
+     Em **Secrets expostos como variáveis de ambiente**, use **Referenciar um secret** três vezes: `DATABASE_URL` ← `todo-database-url`, `MONGODB_URI` ← `todo-mongodb-uri` e `JWT_SECRET` ← `todo-jwt-secret`, todos na versão `1`.
+   - Sub-aba **Configurações** → role até **Verificações de integridade** → **Adicionar verificação de integridade**. No painel que abre à direita, em **Selecione o tipo da verificação de integridade**, escolha **Verificação de inicialização** (as outras duas opções são *atividade* e *prontidão*). Configure: **Selecione o tipo de sondagem** `HTTP`, **Caminho** `/api/health`, **Porta** `8080`, **Atraso inicial** `0` (segundos), **Período** `5`, **Limite de resultados com falhas** `30` (o padrão é `3`) e **Tempo limite** `3` (o padrão é `1`; não pode exceder o período). Deixe **Cabeçalhos HTTP** desmarcado e clique em **Adicionar**.
+   - Depois de **Concluir** o contêiner, role até **Solicitações**: **Tempo limite da solicitação** `60` (segundos; o padrão é `300`) e **Máximo de solicitações simultâneas por instância** `40` (o padrão é `80`). Mais abaixo, mantenha **Ambiente de execução:** *Padrão* e deixe em branco os campos de **Escalonamento de revisão** (valem os limites de instâncias definidos na etapa 5). Confira que **Otimização da CPU de inicialização** (o *CPU boost*) está marcada, o que já vem por padrão. Não adicione nada em **Conexões do Cloud SQL**.
+   - Aba **Rede** → marque **Conectar a uma VPC para tráfego de saída** → *Enviar tráfego diretamente para uma VPC* → rede `todo-vpc`, sub-rede `todo-subnet-run`, *Encaminhar somente solicitações de IPs privados para a VPC*. Deixe desmarcados **Usar HTTP/2 de ponta a ponta**, **Afinidade da sessão** e **Participe de uma malha de serviço**.
+   - Aba **Segurança** → **Conta de serviço:** troque `Default compute service account` por `todo-api-sa`. Mantenha o restante (autorização binária desmarcada e **Chave de criptografia gerenciada pelo Google**).
+7. Clique em **Criar**. Aguarde a revisão ficar verde.
 
 ## Passo 3 — Verificar
 
@@ -204,6 +230,8 @@ curl -s -X POST "$API_URL/api/auth/register" -H 'Content-Type: application/json'
 
 ## Logs, versões e rollback
 
+**Terminal**
+
 ```bash
 gcloud run services logs read "$SERVICE" --region="$REGION" --limit=50     # logs do container
 gcloud run revisions list --service="$SERVICE" --region="$REGION"          # revisões
@@ -211,7 +239,13 @@ gcloud run revisions list --service="$SERVICE" --region="$REGION"          # rev
 gcloud run services update-traffic "$SERVICE" --region="$REGION" --to-revisions=REVISAO=100
 ```
 
-No Console: **Cloud Run → todo-api → Registros** (logs), **Revisões** (histórico e divisão de tráfego) e **Métricas**.
+**Console**
+
+1. **☰ → Cloud Run → Serviços →** `todo-api`. A página **Detalhes do serviço** mostra, no topo, a URL do serviço e os botões **Teste**, **Atualizar**, **Excluir** e **Reimplantar**. Abaixo ficam as abas *Observability*, *Histórico de revisões*, *Contêineres*, *Rede*, *Segurança*, *Escalonamento*, *Gatilhos*, *Origem* e *YAML*.
+2. **Logs:** aba **Observability → Logs** (o menu lateral da aba também tem **Métricas**, **SLOs**, **Errors** e **Cost**). Durante a criação, o painel **Criando serviço** mostra o andamento (*Criando serviço*, *Criando revisão*, *Roteando tráfego*), e os logs do container aparecem em tempo real. A subida da API termina com `Nest application successfully started` e `API pronta na porta 8080`.
+   - **Se a revisão falhar:** o painel mostra **Criando revisão: Falha** com a causa e o link **Abrir o Cloud Logging**. Ele abre a **Análise de registros** já filtrada pela revisão (`todo-api-0000X-xxx`) e por `severity="ERROR"`. Procure a linha `STARTUP HTTP probe failed ... returned status 404 Not Found` (caminho do probe errado) ou o erro do container (variável inválida, banco inacessível). **Roteando tráfego** fica *Cancelada*: nenhuma requisição chega a uma revisão que não passou no teste.
+3. **Métricas:** aba **Observability → Métricas** (requisições, latência, instâncias, CPU e memória).
+4. **Revisões:** aba **Histórico de revisões** lista cada revisão criada (uma por deploy) e quanto tráfego recebe. É por ela que se volta a uma revisão anterior.
 
 Para publicar uma versão nova: gere `1.0.1` no [capítulo 8](08-artifact-registry-e-cloud-build.md), execute o **job** de novo (se houver migration) e rode `gcloud run deploy "$SERVICE" --image="$REGISTRY/todo-api:1.0.1" --region="$REGION"` (as demais configurações são mantidas).
 
@@ -230,6 +264,7 @@ Agora **todo** o tráfego de saída sai pelo IP do NAT. Lembre-se: com Cloud NAT
 | Sintoma | Causa provável | Solução |
 |---|---|---|
 | `The user-provided container failed to start and listen on the port defined by PORT` | A API caiu na subida (variável inválida, banco inacessível) | `gcloud run services logs read` mostra o erro real. A API valida as variáveis e falha cedo |
+| `The user-provided container failed the configured startup probe checks` e, no log, `STARTUP HTTP probe failed 30 times consecutively ... path "/api/healt" ... returned status 404 Not Found` | O **Caminho** da verificação de inicialização está errado (aqui faltou o `h` final de `/api/health`). A API sobe, mas o probe recebe 404 e a revisão é derrubada | Corrija o caminho para `/api/health` e reimplante (Console: aba **Contêineres**, em **Verificações de integridade**, depois **Reimplantar**) |
 | `Permission denied on secret ...` | Falta `secretAccessor` | Capítulo 7, passo 4.1 |
 | Log com `MongoServerSelectionError` | IP fora da *IP Access List* do Atlas | Capítulo 5, passo 3 |
 | `connection timeout` para o Postgres | Rede/egress não configurados, peering inativo ou IP errado no `todo-database-url` | Confira `gcloud run services describe` (bloco *VPC access*) e o segredo |

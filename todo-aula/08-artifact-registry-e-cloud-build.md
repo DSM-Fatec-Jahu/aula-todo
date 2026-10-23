@@ -53,9 +53,19 @@ gcloud artifacts repositories list --location="$REGION"
 
 **Terminal**
 
+As variáveis `BUILD_SA_NAME` e `BUILD_SA` vêm do `~/todo-aula.env` (capítulo 2). Se o seu arquivo foi criado antes desta atualização e não as tem, acrescente-as:
+
 ```bash
+grep -q BUILD_SA ~/todo-aula.env || cat >> ~/todo-aula.env <<'EOF'
 export BUILD_SA_NAME="todo-build-sa"
 export BUILD_SA="${BUILD_SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+EOF
+```
+
+Depois crie a conta e conceda os papéis:
+
+```bash
+source ~/todo-aula.env
 
 gcloud iam service-accounts create "$BUILD_SA_NAME" \
   --display-name="Todo Build (Cloud Build)" \
@@ -72,7 +82,8 @@ done
 **Console**
 
 1. **IAM e administrador → Contas de serviço → Criar conta de serviço**: nome `Todo Build (Cloud Build)`, ID `todo-build-sa` → **Criar e continuar**.
-2. Em **Conceder a esta conta de serviço acesso ao projeto**, adicione os 4 papéis: **Gravador do Artifact Registry**, **Gravador de registros**, **Visualizador de buckets do Storage** e **Usuário de objetos do Storage** → **Concluído**.
+2. Na seção **Permissões (opcional)**, clique em **Selecionar papel**, pesquise pelo nome e escolha o primeiro papel. Depois clique em **Adicionar outro papel** e repita até ter os 4 papéis: **Gravador do Artifact Registry**, **Gravador de registros**, **Leitor de buckets do Storage (Beta)** e **Usuário de objetos do Storage**. Clique em **Continuar**.
+3. Em **Principais com acesso (opcional)**, não preencha nada → **Concluído**.
 
 | Papel | Para quê |
 |---|---|
@@ -84,9 +95,12 @@ done
 
 O comando envia a pasta `todo-api` (respeitando o `.gcloudignore`), executa o `cloudbuild.yaml` e publica as duas imagens.
 
+> **Esta etapa só pode ser feita pelo Terminal.** O Console não envia o código-fonte local para o Cloud Build: nele só é possível **acompanhar** o build (veja abaixo) ou configurar gatilhos de um repositório Git. Quem criou a conta de serviço pelo Console no passo 2 também deve executar o bloco abaixo, **incluindo o `source`**, que carrega `BUILD_SA`, `REGISTRY`, `TAG` e as demais variáveis.
+
 **Terminal**
 
 ```bash
+source ~/todo-aula.env
 cd todo-api
 
 gcloud builds submit . \

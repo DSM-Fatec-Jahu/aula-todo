@@ -59,6 +59,8 @@ export SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 export REPO="todo"
 export TAG="1.0.0"
 export REGISTRY="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}"
+export BUILD_SA_NAME="todo-build-sa"
+export BUILD_SA="${BUILD_SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
 
 # Cloud Run (capitulo 9)
 export SERVICE="todo-api"
