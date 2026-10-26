@@ -220,8 +220,10 @@ gcloud sql instances describe "$SQL_INSTANCE" --format="table(ipAddresses.type,i
 O **`DATABASE_URL`** que a API usará será:
 
 ```text
-postgresql://todo_app:SENHA@IP_INTERNO:5432/todo
+postgresql://todo_app:SENHA@IP_INTERNO:5432/todo?sslmode=require&uselibpqcompat=true
 ```
+
+O sufixo `?sslmode=require&uselibpqcompat=true` é **obrigatório**: o Cloud SQL só aceita conexões criptografadas e, sem ele, o Postgres responde `pg_hba.conf rejects connection ... no encryption`. O `uselibpqcompat=true` faz o driver se comportar como o `psql` (criptografa, mas não valida o certificado contra autoridades públicas, e o Cloud SQL usa uma autoridade própria). Sem ele, o driver `pg` trata `sslmode=require` como `verify-full` e recusa o certificado com `self-signed certificate in certificate chain`.
 
 Ele é montado e guardado como segredo no capítulo 7.
 
