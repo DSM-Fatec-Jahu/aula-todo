@@ -100,25 +100,43 @@ ls dist dist/assets
 
 O código do front chama sempre `/api`, então **não há variável de ambiente a configurar** para produção.
 
-## Passo 4 — Publicar
+## Passo 4 — Criar o site e publicar
 
-**Antes do primeiro deploy: ativar o Hosting no Console**
+Este passo tem três partes, **sempre nesta ordem**: **4.1** garantir que o site do Hosting existe, **4.2** publicar o build e **4.3** conferir o resultado no painel. Em cada parte, **Terminal** e **Console** são **caminhos equivalentes** (faça um dos dois), exceto onde o texto avisar que o Console não faz aquilo.
 
-A partir de outubro de 2026, o Firebase **não cria mais o site padrão automaticamente** em projetos novos (o console avisa: *"o provisionamento do site padrão será feito sob demanda"*). Por isso, no primeiro uso:
+### 4.1 — Ativar o site do Hosting (só no primeiro uso)
+
+A partir de outubro de 2026, o Firebase **não cria mais o site padrão automaticamente** em projetos novos (o console avisa: *"o provisionamento do site padrão será feito sob demanda"*). Sem esse site, o deploy do passo 4.2 falha. Primeiro, veja se ele já existe:
+
+```bash
+npx --yes firebase-tools@latest hosting:sites:list --project "$PROJECT_ID"
+```
+
+Se a lista já mostrar um site com ID `<PROJECT_ID>`, **pule para o 4.2**. Se vier vazia, crie o site por um dos caminhos abaixo.
+
+**Terminal**
+
+```bash
+npx --yes firebase-tools@latest hosting:sites:create "$PROJECT_ID" --project "$PROJECT_ID"
+npx --yes firebase-tools@latest hosting:sites:list --project "$PROJECT_ID"    # confirma
+```
+
+**Console**
 
 1. Em **Hospedagem e sem servidor** → **Hosting** (ou `https://console.firebase.google.com/project/<PROJECT_ID>/hosting`), clique em **Vamos começar**.
 2. O assistente mostra os passos de instalar a CLI, inicializar e implantar. **Não precisamos executá-los** (o `firebase.json` já existe): avance com **Próxima** até concluir e clique em **Continuar para o console**.
 3. Confirme que o painel passou a listar o domínio `<PROJECT_ID>.web.app`.
 
-Se preferir pelo terminal (e o site ainda não existir):
+> O assistente do Console **só cria o site**; ele não publica nada. O painel ainda ficará sem versões até o passo 4.2.
 
-```bash
-npx --yes firebase-tools@latest hosting:sites:create "$PROJECT_ID" --project "$PROJECT_ID"
-```
+> Se o site ID **não** for igual ao `PROJECT_ID`, ajuste as origens no CORS do bucket ([capítulo 6](06-cloud-storage.md)) e a variável `CORS_ORIGINS` do serviço.
+
+### 4.2 — Publicar o build
 
 **Terminal**
 
 ```bash
+cd todo-web
 npx --yes firebase-tools@latest deploy --only hosting --project "$PROJECT_ID"
 ```
 
@@ -131,16 +149,20 @@ Hosting URL: https://<PROJECT_ID>.web.app
 
 **Console**
 
-1. No [Console do Firebase](https://console.firebase.google.com/), abra o projeto `Todo Aula`. No menu lateral, clique em **Hospedagem e sem servidor** (*Hosting and serverless*) → **Hosting**. Ou vá direto pela URL: `https://console.firebase.google.com/project/<PROJECT_ID>/hosting`. O painel mostra os domínios, o **histórico de versões** e o botão de **reversão**.
-2. (Deploy pelo Console não existe; o painel é para acompanhar e reverter.)
+**Não existe.** O Console do Firebase **não envia arquivos**: o deploy é feito pela CLI. O painel serve para acompanhar e reverter (4.3).
 
-Para conferir o **site ID**:
+### 4.3 — Conferir no painel
+
+**Terminal**
 
 ```bash
 npx --yes firebase-tools@latest hosting:sites:list --project "$PROJECT_ID"
+curl -sI "https://$PROJECT_ID.web.app" | head -n 1      # HTTP/2 200
 ```
 
-> Se o site ID **não** for igual ao `PROJECT_ID`, ajuste as origens no CORS do bucket ([capítulo 6](06-cloud-storage.md)) e a variável `CORS_ORIGINS` do serviço.
+**Console**
+
+Abra `https://console.firebase.google.com/project/<PROJECT_ID>/hosting` (menu **Hospedagem e sem servidor** → **Hosting**). O painel mostra os domínios, o **histórico de versões** (agora com o deploy do 4.2) e o botão de **reversão** para uma versão anterior.
 
 ## Passo 5 — Testar de ponta a ponta
 
