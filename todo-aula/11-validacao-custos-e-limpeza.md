@@ -2,7 +2,7 @@
 
 Tudo publicado. Falta **provar que funciona**, **fechar a conta** e **desligar o que gera custo**. Este é o capítulo em que o roteiro termina: o app só está "pronto" depois de validado, e a infraestrutura só está "encerrada" depois de apagada.
 
-[← Firebase Hosting](10-firebase-hosting.md) · [README](../README.md)
+[← Firebase Hosting](10-firebase-hosting.md) · [README](../README.md) · [Leitura opcional: Cloud Run × Kubernetes →](12-cloud-run-vs-kubernetes.md)
 
 ## 1. Teste de ponta a ponta
 
@@ -235,4 +235,4 @@ No Console, **Faturamento → Relatórios** mostra o custo por serviço; confira
 
 ---
 
-[← Firebase Hosting](10-firebase-hosting.md) · [README](../README.md)
+[← Firebase Hosting](10-firebase-hosting.md) · [README](../README.md) · [Leitura opcional: Cloud Run × Kubernetes →](12-cloud-run-vs-kubernetes.md)

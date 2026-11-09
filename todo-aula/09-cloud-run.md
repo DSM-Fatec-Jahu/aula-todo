@@ -4,6 +4,8 @@ O **Cloud Run** executa containers sem que você gerencie servidores: ele cria i
 
 [← Artifact Registry e Cloud Build](08-artifact-registry-e-cloud-build.md) · [README](../README.md) · [Próximo: Firebase Hosting →](10-firebase-hosting.md)
 
+> **Curiosidade:** quer saber como esta mesma API seria hospedada no Kubernetes, e quando isso compensa? Veja a leitura opcional do [capítulo 12](12-cloud-run-vs-kubernetes.md) depois de terminar o roteiro.
+
 ## Conceitos
 
 | Termo | Explicação |

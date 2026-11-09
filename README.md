@@ -55,6 +55,7 @@ flowchart LR
 | 9 | [09-cloud-run.md](todo-aula/09-cloud-run.md) | Job de migrations e serviço da API |
 | 10 | [10-firebase-hosting.md](todo-aula/10-firebase-hosting.md) | Publicação do React e rewrite para o Cloud Run |
 | 11 | [11-validacao-custos-e-limpeza.md](todo-aula/11-validacao-custos-e-limpeza.md) | Testes de ponta a ponta, custo total, como apagar tudo e problemas comuns |
+| 12 | [12-cloud-run-vs-kubernetes.md](todo-aula/12-cloud-run-vs-kubernetes.md) | **Opcional, só leitura.** Cloud Run × Kubernetes (GKE Autopilot): escalabilidade, como a API viraria manifestos, o que quebra na migração, benefícios e custos |
 
 Cada capítulo de recurso termina com uma **estimativa mensal de custo** baseada nas páginas oficiais de preço. Há também o script de teste de ponta a ponta [`scripts/smoke-test.sh`](todo-aula/scripts/smoke-test.sh), usado no capítulo 11.
 
@@ -92,7 +93,7 @@ Cada capítulo de recurso termina com uma **estimativa mensal de custo** baseada
 - Os nomes ficam em variáveis definidas no [capítulo 2](todo-aula/02-projeto-gcp-e-ferramentas.md). Em terminal novo, rode `source ~/todo-aula.env`.
 - Os valores das tabelas ("Nome", "Versão", "Região") são os que os comandos usam. Se mudar um, mude nos dois lugares.
 - Preços em **USD**, consultados em 20/09/2026 nas páginas oficiais; considere 730 horas por mês.
-- Siga os capítulos **na ordem**: cada um usa o que você criou no anterior. Termine sempre pelo [capítulo 11](todo-aula/11-validacao-custos-e-limpeza.md) para apagar o que gera custo.
+- Siga os capítulos **na ordem**: cada um usa o que você criou no anterior. Termine sempre pelo [capítulo 11](todo-aula/11-validacao-custos-e-limpeza.md) para apagar o que gera custo. O [capítulo 12](todo-aula/12-cloud-run-vs-kubernetes.md) é uma leitura comparativa opcional: não cria recursos e não precisa ser executado.
 
 ## Pré-requisitos
 
