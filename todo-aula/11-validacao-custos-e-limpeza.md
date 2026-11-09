@@ -12,8 +12,10 @@ O script [`scripts/smoke-test.sh`](scripts/smoke-test.sh) percorre o mesmo camin
 
 ```bash
 cd todo-aula/scripts
-./smoke-test.sh "https://$PROJECT_ID.web.app"
+bash smoke-test.sh "https://$PROJECT_ID.web.app"
 ```
+
+> Usamos `bash smoke-test.sh` (e não `./smoke-test.sh`) porque o arquivo pode não ter a permissão de execução depois do `git clone`, o que causa `Permission denied`. Não use `sudo`: o script não precisa de privilégios de administrador.
 
 Saída esperada (resumida):
 

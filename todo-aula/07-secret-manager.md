@@ -22,7 +22,7 @@ Senhas e chaves **não** entram no código, na imagem Docker nem em variáveis d
 | `todo-db-password` | Senha do usuário `todo_app` do Cloud SQL | Capítulo 4 | *(não é lido pela API; é a fonte para montar a URL)* |
 | `todo-mongodb-uri` | URI `mongodb+srv://...` do Atlas | Capítulo 5 | `MONGODB_URI` |
 | `todo-jwt-secret` | Chave que assina os tokens de login (64 caracteres aleatórios) | **Este capítulo** | `JWT_SECRET` |
-| `todo-database-url` | `postgresql://todo_app:SENHA@IP_PRIVADO:5432/todo` | **Este capítulo** | `DATABASE_URL` |
+| `todo-database-url` | `postgresql://todo_app:SENHA@IP_PRIVADO:5432/todo?sslmode=require&uselibpqcompat=true` | **Este capítulo** | `DATABASE_URL` |
 
 > `todo-db-password` e `todo-mongodb-uri` já existem desde os capítulos 4 e 5 (o comando `gcloud secrets create` e a opção pelo Console foram explicados lá, no momento em que a senha e a URI ainda estavam na memória do terminal). Aqui criamos os **2 segredos que faltam** e, principalmente, a identidade que tem permissão para ler os 3 usados pela API.
 
@@ -67,7 +67,7 @@ Montamos a URL com o IP privado (capítulo 4) e a senha guardada. O valor **nunc
 DB_PRIVATE_IP="$(gcloud sql instances describe "$SQL_INSTANCE" --format='value(ipAddresses[0].ipAddress)')"
 DB_PASSWORD="$(gcloud secrets versions access latest --secret=todo-db-password)"
 
-printf 'postgresql://%s:%s@%s:5432/%s' "$DB_USER" "$DB_PASSWORD" "$DB_PRIVATE_IP" "$DB_NAME" | \
+printf 'postgresql://%s:%s@%s:5432/%s?sslmode=require&uselibpqcompat=true' "$DB_USER" "$DB_PASSWORD" "$DB_PRIVATE_IP" "$DB_NAME" | \
   gcloud secrets create todo-database-url \
     --replication-policy=automatic --data-file=- --project="$PROJECT_ID"
 
@@ -77,7 +77,7 @@ unset DB_PASSWORD DB_PRIVATE_IP
 **Console**
 
 1. **Secret Manager → Criar secret**, nome `todo-database-url`.
-2. Valor: `postgresql://todo_app:SENHA@IP_PRIVADO:5432/todo`, com a senha lida em `todo-db-password → Ações → Ver o valor do secret` e o IP em *Cloud SQL → Visão geral*.
+2. Valor: `postgresql://todo_app:SENHA@IP_PRIVADO:5432/todo?sslmode=require&uselibpqcompat=true`, com a senha lida em `todo-db-password → Ações → Ver o valor do secret` e o IP em *Cloud SQL → Visão geral*.
 
 ## Passo 3 — Criar a conta de serviço
 

@@ -48,11 +48,19 @@ Por isso o app tem um índice **TTL** na coleção `activities`: o próprio Mong
 
 **Console (Atlas)**
 
-1. Acesse [cloud.mongodb.com](https://cloud.mongodb.com/) e crie a conta (o plano Free não pede cartão).
-2. Crie uma **Organização** e um **Projeto** chamado `todo-aula`.
-3. Clique em **Create** (Create a deployment) e escolha **Free**.
-4. **Name:** `todo`. **Provider:** *Google Cloud*. **Region:** *Iowa (us-central1)*.
-5. Clique em **Create Deployment**. O assistente seguinte oferece criar um usuário e liberar um IP; pode pular, faremos manualmente nos passos 2 e 3.
+1. Acesse [cloud.mongodb.com](https://cloud.mongodb.com/) e crie a conta (o plano Free não pede cartão). Se o Atlas pedir, crie uma **Organização** (por exemplo, `todo-aula`).
+2. Na tela **All Projects** (*No Projects Yet*), clique em **Create new project** (ou em **New Project**, no canto superior direito).
+3. Etapa **Name Your Project**: digite `todo-aula` (as *tags* são opcionais; deixe em branco) → **Next**.
+4. Etapa **Add Members**: você já aparece como **Project Owner**; não convide ninguém → **Create Project**.
+5. Na **Project Overview** (*todo-aula Overview*), no cartão **Create a cluster**, clique em **Create**.
+6. Na tela **Deploy your cluster**, escolha o cartão **Free** (512 MB, US$ 0/hora).
+7. Em **Configurations**: **Name:** `todo`. **Provider:** *Google Cloud*. **Region:** troque para *Iowa (us-central1)*. O Atlas sugere *Sao Paulo (southamerica-east1)* por padrão; **não o deixe assim**, para ficar na mesma região da API.
+8. Em **Quick setup**:
+   - **Automate security setup:** **desmarque**. Marcado, o Atlas cria sozinho um usuário administrador (`atlasAdmin`, acesso a tudo) e libera `0.0.0.0/0` sem prazo, e nós faremos isso do jeito certo nos passos 2 e 3.
+   - **Preload sample dataset:** deixe desmarcado.
+9. Clique em **Create Deployment**. Se aparecer o assistente *Connect to todo*, clique em **Close**.
+
+> Se você deixou **Automate security setup** marcado, não tem problema: no Passo 2 **apague** o usuário criado automaticamente (`<seu-usuario>_db_user`, papel `atlasAdmin@admin`) e no Passo 3 **edite** a entrada `0.0.0.0/0` existente para que ela seja temporária.
 
 **Terminal (Atlas CLI)** — opcional
 
@@ -77,10 +85,11 @@ export MONGO_PASSWORD="$(node -e "console.log(require('crypto').randomBytes(24).
 
 **Console (Atlas)**
 
-1. Menu **Security → Database Access → Add New Database User**.
-2. **Authentication Method:** *Password*. **Username:** `todo_app`. **Password:** cole o valor de `$MONGO_PASSWORD` (`echo "$MONGO_PASSWORD"`).
-3. Em **Database User Privileges**, escolha **Specific Privileges** → *Add Specific Privilege*: role `readWrite`, database `todo`. **Remova** o papel `Atlas admin` padrão.
-4. Clique em **Add User**.
+1. No menu lateral do projeto, **Security → Database & Network Access**. Na página, em **Database Access**, abra **Database Users** e clique em **+ Add New Database User**.
+2. **Authentication Method:** *Password*. **Password Authentication:** no primeiro campo digite o usuário `todo_app`; no segundo, cole o valor de `$MONGO_PASSWORD` (`echo "$MONGO_PASSWORD"`).
+   - Se preferir **Autogenerate Secure Password**, use **Copy** para guardar o valor e confira que ele tem só letras e números; se houver símbolos, codifique-os na URI (veja a [tabela do capítulo 4](04-cloud-sql-postgresql.md#e-se-a-senha-já-tiver-caracteres-especiais-prisma-e-url-encode)).
+3. Em **Database User Privileges**, deixe **Built-in Role** com *0 SELECTED* (**não** use *Add Built In Role*, nem *Read and write to any database*, que dá acesso a todos os bancos). Expanda **Specific Privileges** e clique em *Add Specific Privilege*: role `readWrite`, database `todo`.
+4. Deixe desligados *Restrict Access to Specific Clusters* e *Temporary User*. Clique em **Add User**.
 
 **Terminal (Atlas CLI)**
 
@@ -90,7 +99,7 @@ atlas dbusers create --projectId "$ATLAS_PROJECT_ID" \
   --role readWrite@todo
 ```
 
-> Se a senha de um usuário aparecer em chat, e-mail, print ou repositório, **considere-a comprometida**: em *Database Access → Edit → Edit Password* defina outra. O Atlas oferece um arquivo `atlas-credentials.env` no assistente de criação; **não o versione**.
+> Se a senha de um usuário aparecer em chat, e-mail, print ou repositório, **considere-a comprometida**: em *Security → Database & Network Access → Database Users → Edit* defina outra senha. Se usar o assistente de segurança automática, o Atlas oferece um arquivo `atlas-credentials.env`; **não o versione**.
 
 ## Passo 3 — Liberar o acesso de rede
 
@@ -98,10 +107,12 @@ O Atlas só aceita conexões de IPs cadastrados na **IP Access List**. O Cloud R
 
 **Console (Atlas)**
 
-1. **Security → Network Access → Add IP Address**.
+1. **Security → Database & Network Access**. No submenu **Network Access**, abra **IP Access List** e clique em **+ Add IP Address**.
 2. Clique em **Allow Access from Anywhere** (preenche `0.0.0.0/0`).
 3. Marque **Save as temporary access list** e escolha **1 day** (as opções são 6 horas, 1 dia ou 1 semana).
 4. Confirme. O Atlas envia um e-mail de alerta a quem participa do projeto: é esperado.
+
+> Se a lista já mostra `0.0.0.0/0 (includes your current IP address)` (criada pelo *Automate security setup*), clique em **Edit** nessa linha e transforme-a em temporária, em vez de criar outra.
 
 **Terminal (Atlas CLI)**
 
@@ -118,12 +129,21 @@ atlas accessLists create 0.0.0.0/0 --type cidrBlock \
 
 **Console (Atlas)**
 
-1. **Database → Clusters →** botão **Connect** do cluster `todo`.
-2. Escolha **Drivers** (Node.js) e copie a URI:
+1. **Database → Clusters** e, no cartão do cluster `todo`, clique em **Connect**.
+2. O assistente *Connect to todo* abre na etapa **Choose a connection method**. Escolha **Drivers and Client Libraries** (*Connect using MongoDB drivers, e.g. Node.js, Go... Mongoose, Prisma*).
+3. Na etapa **Connect**, deixe **Language:** *JavaScript* e **Client Library:** *Node.js Driver*, aba **Configure connection string**. Copie a URI exibida (botão de copiar), com **Legacy URI String** desligado. Ela vem assim:
 
 ```text
-mongodb+srv://todo_app:<password>@todo.xxxxxxx.mongodb.net/?retryWrites=true&w=majority&appName=todo
+mongodb+srv://todo_app:<db_password>@todo.xxxxxxx.mongodb.net/
 ```
+
+4. Clique em **Done**.
+
+> **Atenção: a URI do site vem incompleta.** O Atlas **não** mostra os parâmetros no final. É preciso **adicionar manualmente** `?retryWrites=true&w=majority&appName=todo` ao final da URI. A URI correta fica:
+>
+> ```text
+> mongodb+srv://todo_app:<db_password>@todo.xxxxxxx.mongodb.net/?retryWrites=true&w=majority&appName=todo
+> ```
 
 **Terminal (Atlas CLI)**
 
@@ -131,7 +151,7 @@ mongodb+srv://todo_app:<password>@todo.xxxxxxx.mongodb.net/?retryWrites=true&w=m
 atlas clusters connectionStrings describe todo --projectId "$ATLAS_PROJECT_ID"
 ```
 
-Monte a URI final trocando `<password>` pela senha real:
+Monte a URI final trocando `<db_password>` pela senha real (e **sem esquecer os parâmetros do final**):
 
 ```bash
 export MONGODB_URI="mongodb+srv://todo_app:${MONGO_PASSWORD}@todo.xxxxxxx.mongodb.net/?retryWrites=true&w=majority&appName=todo"
@@ -142,7 +162,8 @@ export MONGODB_URI="mongodb+srv://todo_app:${MONGO_PASSWORD}@todo.xxxxxxx.mongod
 | `mongodb+srv://` | Usa DNS SRV: o driver descobre os 3 nós do cluster e usa **TLS por padrão** |
 | `todo_app:senha` | Usuário e senha. A senha `base64url` não precisa de escape |
 | `todo.xxxxxxx.mongodb.net` | Nome do cluster (fornecido pelo Atlas) |
-| `retryWrites=true&w=majority` | Boas práticas de escrita em réplica |
+| `retryWrites=true&w=majority` | Boas práticas de escrita em réplica (**você adiciona**; o site não mostra) |
+| `appName=todo` | Identifica a aplicação nos logs do Atlas (**você adiciona**; o site não mostra) |
 
 A URI **não leva o nome do banco**: a API o recebe em `MONGODB_DB=todo` (variável do Cloud Run).
 
@@ -166,7 +187,7 @@ unset MONGO_PASSWORD MONGODB_URI
 **Console**
 
 1. **☰ → Segurança → Secret Manager → Criar secret**.
-2. **Nome:** `todo-mongodb-uri`. **Valor do secret:** cole a URI completa montada acima (com o usuário e a senha).
+2. **Nome:** `todo-mongodb-uri`. **Valor do secret:** cole a URI completa montada acima (com o usuário, a senha real no lugar de `<db_password>` e os parâmetros `?retryWrites=true&w=majority&appName=todo` no final).
 3. Mantenha a política de replicação padrão e clique em **Criar secret**.
 
 > Assim como o `todo-db-password`, este segredo só poderá ser lido pela API depois que o [capítulo 7](07-secret-manager.md) criar a conta de serviço e conceder a permissão `secretAccessor`.
